@@ -1,0 +1,15 @@
+com\hodvidar\insuratradeflow\api\dto\InsurancePolicyDto.class
+com\hodvidar\insuratradeflow\business\domain\InsurancePolicy.class
+com\hodvidar\insuratradeflow\api\controller\ControllerExceptionHandler.class
+com\hodvidar\insuratradeflow\business\mapper\InsurancePolicyMapperImpl.class
+com\hodvidar\insuratradeflow\persistance\dao\InsurancePolicyDao.class
+com\hodvidar\insuratradeflow\business\service\InsurancePolicyServiceImpl.class
+com\hodvidar\insuratradeflow\business\validation\InsurancePolicyValidator.class
+com\hodvidar\insuratradeflow\api\controller\InsurancePolicyController.class
+com\hodvidar\insuratradeflow\business\validation\InsurancePolicyValidationException.class
+com\hodvidar\insuratradeflow\business\domain\PolicyStatus.class
+com\hodvidar\insuratradeflow\business\mapper\InsurancePolicyMapper.class
+com\hodvidar\insuratradeflow\business\service\InsurancePolicyService.class
+com\hodvidar\insuratradeflow\InsuraTradeFlowApplication.class
+com\hodvidar\insuratradeflow\api\config\WebSecurityConfig.class
+com\hodvidar\insuratradeflow\persistance\repository\InsurancePolicyRepository.class

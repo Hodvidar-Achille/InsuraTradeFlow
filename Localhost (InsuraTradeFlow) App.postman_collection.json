@@ -1,0 +1,272 @@
+{
+	"info": {
+		"_postman_id": "b8fbdbf9-e8dc-4bb3-9477-4c1b79b80623",
+		"name": "Localhost (InsuraTradeFlow) App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30436338"
+	},
+	"item": [
+		{
+			"name": "Create Insurance Policy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-XSRF-TOKEN",
+						"value": "{{xsrf-token}}",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": 0,\r\n  \"name\": \"Axa-insurance-businessv3\",\r\n  \"status\": \"INACTIVE\",\r\n  \"startDate\": \"2020-01-21\",\r\n  \"endDate\": \"2023-12-01\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{root}}/api/v1/insurance-policies",
+					"host": [
+						"{{root}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"insurance-policies"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insurance Policies",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{root}}/api/v1/insurance-policies",
+					"host": [
+						"{{root}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"insurance-policies"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insurance Policy",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{root}}/api/v1/insurance-policies/6",
+					"host": [
+						"{{root}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"insurance-policies",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Modify Insurance Policy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-XSRF-TOKEN",
+						"value": "{{xsrf-token}}",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Axa-insurance-businessv3v2\",\r\n    \"status\": \"ACTIVE\",\r\n    \"startDate\": \"2020-01-21\",\r\n    \"endDate\": \"2023-12-01\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{root}}/api/v1/insurance-policies/6",
+					"host": [
+						"{{root}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"insurance-policies",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insurance Policy",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{root}}/api/v1/insurancepolicies/1",
+					"host": [
+						"{{root}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"insurancepolicies",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Swagger index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{root}}/swagger-ui/index.html",
+					"host": [
+						"{{root}}"
+					],
+					"path": [
+						"swagger-ui",
+						"index.html"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
