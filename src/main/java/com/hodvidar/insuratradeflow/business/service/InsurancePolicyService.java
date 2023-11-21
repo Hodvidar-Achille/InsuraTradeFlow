@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface InsurancePolicyService {
 
-    InsurancePolicy createInsurancePolicy(InsurancePolicyDto raceDao) throws InsurancePolicyValidationException;
+    InsurancePolicy createInsurancePolicy(InsurancePolicyDto insurancePolicyDto) throws InsurancePolicyValidationException;
 
     List<InsurancePolicy> getAllInsurancePolicies();
 

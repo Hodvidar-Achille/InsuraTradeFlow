@@ -34,8 +34,8 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
     }
 
     @Override
-    public InsurancePolicy createInsurancePolicy(final InsurancePolicyDto dto) throws InsurancePolicyValidationException {
-        InsurancePolicy newInsurancePolicy = insurancePolicyMapper.dtoToModel(dto);
+    public InsurancePolicy createInsurancePolicy(final InsurancePolicyDto insurancePolicyDto) throws InsurancePolicyValidationException {
+        InsurancePolicy newInsurancePolicy = insurancePolicyMapper.dtoToModel(insurancePolicyDto);
         insurancePolicyValidator.validate(newInsurancePolicy);
         final InsurancePolicyDao save = insurancePolicyRepository.save(insurancePolicyMapper.modelToEntity(newInsurancePolicy));
         final InsurancePolicy savedInsurancePolicy = insurancePolicyMapper.entityToModel(save);
@@ -53,8 +53,8 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
 
     @Override
     public InsurancePolicy getInsurancePolicyById(final Long id) {
-        Optional<InsurancePolicyDao> raceDao = insurancePolicyRepository.findById(id);
-        return raceDao.map(insurancePolicyMapper::entityToModel).orElse(null);
+        Optional<InsurancePolicyDao> insurancePolicyDao = insurancePolicyRepository.findById(id);
+        return insurancePolicyDao.map(insurancePolicyMapper::entityToModel).orElse(null);
     }
 
     @Override
@@ -87,18 +87,18 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
 
     @Override
     public InsurancePolicy deleteInsurancePolicy(final Long id) {
-        Optional<InsurancePolicyDao> raceDao = insurancePolicyRepository.findById(id);
-        if (raceDao.isEmpty()) {
+        Optional<InsurancePolicyDao> existingInsurancePolicyDao = insurancePolicyRepository.findById(id);
+        if (existingInsurancePolicyDao.isEmpty()) {
             log.info("No Insurance Policy for given id '{}', deletion action does nothing", id);
             // Could be removed to avoid returning a Bad Request in case of several same calls
             // Note: idempotentcy will not be achieved by avoiding the error as second call will
             //       return an empty object anyway.
             throw new IllegalArgumentException("No Insurance Policy for given id '" + id + "'");
         } else {
-            final InsurancePolicyDao insurancePolicyDao = raceDao.get();
+            final InsurancePolicyDao insurancePolicyDao = existingInsurancePolicyDao.get();
             insurancePolicyRepository.delete(insurancePolicyDao);
             log.info("Deleted an Insurance Policy : {}", insurancePolicyDao);
         }
-        return raceDao.map(insurancePolicyMapper::entityToModel).orElse(null);
+        return existingInsurancePolicyDao.map(insurancePolicyMapper::entityToModel).orElse(null);
     }
 }
