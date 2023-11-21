@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.hodvidar.insuratradeflow.service.InsurancePolicyServiceTest
--------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.456 s - in com.hodvidar.insuratradeflow.service.InsurancePolicyServiceTest
