@@ -77,11 +77,11 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
                                                                    final InsurancePolicyDao existingPolicy)
             throws InsurancePolicyValidationException {
         InsurancePolicy updatedPolicy = insurancePolicyMapper.dtoToModel(dto);
+        insurancePolicyValidator.validate(updatedPolicy);
         existingPolicy.setName(updatedPolicy.getName());
         existingPolicy.setStatus(updatedPolicy.getStatus());
         existingPolicy.setStartDate(updatedPolicy.getStartDate());
         existingPolicy.setEndDate(updatedPolicy.getEndDate());
-        insurancePolicyValidator.validate(updatedPolicy);
         return existingPolicy;
     }
 
