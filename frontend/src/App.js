@@ -3,16 +3,17 @@ import './App.css';
 
 function App() {
     const [message, setMessage] = useState('Loading...');
-    const [policies, setPolicies] = useState([]);
+    const apiUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:8080'
+        : 'http://app:8080';
     const [newPolicy, setNewPolicy] = useState({
         name: '',
         status: 'ACTIVE',
         startDate: '',
         endDate: ''
     });
-    const apiUrl = window.location.hostname === 'localhost'
-        ? 'http://localhost:8080'
-        : 'http://app:8080';
+    const [policies, setPolicies] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         // Initial greeting fetch
@@ -28,7 +29,32 @@ function App() {
             })
             .then(data => setMessage(data.message))
             .catch(error => setMessage(`Error: ${error.message}`));
+
+        fetchPolicies();
     }, [apiUrl]);
+
+    const fetchPolicies = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${apiUrl}/api/v1/insurance-policies`, {
+                headers: {
+                    'Authorization': 'Basic ' + btoa('user:password'),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setPolicies(data);
+            setLoading(false);
+        } catch (error) {
+            setMessage(`Error fetching policies: ${error.message}`);
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -68,6 +94,18 @@ function App() {
         } catch (error) {
             setMessage(`Error creating policy: ${error.message}`);
         }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    };
+
+    const formatDateTime = (dateTimeString) => {
+        if (!dateTimeString) return '-';
+        const date = new Date(dateTimeString);
+        return date.toLocaleString();
     };
 
     return (
@@ -136,6 +174,43 @@ function App() {
 
                         <button type="submit">Create Policy</button>
                     </form>
+                </div>
+
+                {/* Policy List Table (todo: clean up code) */}
+                <div className="policy-list">
+                    <h2>Existing Policies</h2>
+                    {loading ? (
+                        <p>Loading policies...</p>
+                    ) : policies.length === 0 ? (
+                        <p>No policies found</p>
+                    ) : (
+                        <table className="policies-table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {policies.map(policy => (
+                                <tr key={policy.id}>
+                                    <td>{policy.id}</td>
+                                    <td>{policy.name}</td>
+                                    <td>{policy.status}</td>
+                                    <td>{formatDate(policy.startDate)}</td>
+                                    <td>{formatDate(policy.endDate)}</td>
+                                    <td>{formatDateTime(policy.creationDateTime)}</td>
+                                    <td>{formatDateTime(policy.updateDateTime)}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </header>
         </div>
