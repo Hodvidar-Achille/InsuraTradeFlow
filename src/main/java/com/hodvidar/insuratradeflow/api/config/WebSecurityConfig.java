@@ -46,7 +46,8 @@ public class WebSecurityConfig {
             "/csa/api/token",
             // Actuators
             "/actuator/**",
-            "/health/**"
+            "/health/**",
+            "/api/greeting" // our test endpoint
     };
 
     @Value("${security.enable-csrf}")

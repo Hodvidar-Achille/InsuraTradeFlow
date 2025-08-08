@@ -1,9 +1,9 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
     container_name: insuratradeflow-mysql-v1
+    networks:
+      - app-network
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: InsuraTradeFlow
@@ -18,6 +18,9 @@ services:
       retries: 10
 
   app:
+    networks:
+        - app-network
+    hostname: app
     build: .
     container_name: insuratradeflow-app-v1
     ports:
@@ -35,3 +38,18 @@ services:
       DATABASE_USER: InsuraTradeFlowUser
       DATABASE_PASSWORD: InsuraTradeFlowPassword
     restart: on-failure
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    environment:
+      - REACT_APP_API_URL=http://app:8080
+    depends_on:
+      - app
+
+networks:
+  app-network:
+    driver: bridge
