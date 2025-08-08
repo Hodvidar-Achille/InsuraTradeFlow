@@ -1,11 +1,11 @@
-FROM openjdk:21-jdk
+# Use official OpenJDK image
+FROM eclipse-temurin:21-jdk
 
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
+# Set working directory
+WORKDIR /app
 
-# Includes wait-for-it.sh and entrypoint.sh
-COPY . ./
-RUN chmod +x ./wait-for-it.sh ./entrypoint.sh
+# Copy ONLY the built JAR file
+COPY target/*.jar app.jar
 
-# entrypoint will run wait-for-it
-ENTRYPOINT ["./entrypoint.sh"]
+# Run the application (simple and direct)
+CMD ["java", "-jar", "app.jar"]

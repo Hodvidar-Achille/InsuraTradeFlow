@@ -13,7 +13,3 @@ SHOW TABLES;
 SHOW COLUMNS FROM insurance_policies;
 SELECT * FROM insurance_policies;
 
-Commands to test the wait-fot-it.sh bash file:
-1. chmod +x ./wait-for-it.sh
-2. ./wait-for-it.sh www.google.com:80 -- echo "google is up"
-

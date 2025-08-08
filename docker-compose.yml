@@ -1,36 +1,37 @@
-version: '3'
+version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-    ports:
-      - "8080:8080"
-    container_name: "insuratradeflow-app-v1"
-    depends_on:
-      - mysql
-    command: ["./wait-for-it.sh", "insuratradeflow-mysql-v1:3306", "--", "java", "-jar", "demo-1.0-SNAPSHOT.jar"]
-    networks:
-      - app-network
-    environment:
-      - DATABASE_HOST=insuratradeflow-mysql-v1
-      - DATABASE_PORT=3306
-
   mysql:
     image: mysql:8.0
-    container_name: "insuratradeflow-mysql-v1"
-    restart: always
-    # command: --lower_case_table_names=1
+    container_name: insuratradeflow-mysql-v1
     environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      MYSQL_DATABASE: "InsuraTradeFlow"
-      MYSQL_USER: "InsuraTradeFlowUser"
-      MYSQL_PASSWORD: "InsuraTradeFlowPassword"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: InsuraTradeFlow
+      MYSQL_USER: InsuraTradeFlowUser
+      MYSQL_PASSWORD: InsuraTradeFlowPassword
     ports:
-      - "3307:3306"
-    networks:
-      - app-network
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
-networks:
-  app-network:
-    driver: bridge
+  app:
+    build: .
+    container_name: insuratradeflow-app-v1
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:mysql://mysql:3306/InsuraTradeFlow
+      DATABASE_USER: InsuraTradeFlowUser
+      DATABASE_PASSWORD: InsuraTradeFlowPassword
+    restart: on-failure

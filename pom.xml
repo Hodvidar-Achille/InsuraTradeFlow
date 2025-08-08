@@ -4,10 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.insuratradeflow</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>InsuraTradeFlow</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>demo</name>
+    <name>InsuraTradeFlow</name>
     <description>Demo project for Spring Boot</description>
+    <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
