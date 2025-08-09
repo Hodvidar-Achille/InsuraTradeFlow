@@ -116,3 +116,43 @@ policy-list {
 .policies-table tr:hover {
   background-color: #4a4f5b;
 }
+
+/* For pagination in Policies table */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 5px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  margin: 0 2px;
+  border: 1px solid #61dafb;
+  background-color: transparent;
+  color: #61dafb;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination button.active {
+  background-color: #61dafb;
+  color: #282c34;
+  font-weight: bold;
+}
+
+.pagination-info {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #aaa;
+}

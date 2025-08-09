@@ -3,17 +3,24 @@ import './App.css';
 
 function App() {
     const [message, setMessage] = useState('Loading...');
-    const apiUrl = window.location.hostname === 'localhost'
-        ? 'http://localhost:8080'
-        : 'http://app:8080';
+    const [allPolicies, setAllPolicies] = useState([]); // Store all policies
+    const [displayedPolicies, setDisplayedPolicies] = useState([]); // Policies to display on current page
+    const [loading, setLoading] = useState(false);
     const [newPolicy, setNewPolicy] = useState({
         name: '',
         status: 'ACTIVE',
         startDate: '',
         endDate: ''
     });
-    const [policies, setPolicies] = useState([]);
-    const [loading, setLoading] = useState(false);
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [policiesPerPage] = useState(5); // Items per page
+
+    const apiUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:8080'
+        : 'http://app:8080';
+
 
     useEffect(() => {
         // Initial greeting fetch
@@ -30,8 +37,16 @@ function App() {
             .then(data => setMessage(data.message))
             .catch(error => setMessage(`Error: ${error.message}`));
 
+        // Fetch policies
         fetchPolicies();
     }, [apiUrl]);
+
+    // Update displayed policies when allPolicies or currentPage changes
+    useEffect(() => {
+        const indexOfLastPolicy = currentPage * policiesPerPage;
+        const indexOfFirstPolicy = indexOfLastPolicy - policiesPerPage;
+        setDisplayedPolicies(allPolicies.slice(indexOfFirstPolicy, indexOfLastPolicy));
+    }, [allPolicies, currentPage, policiesPerPage]);
 
     const fetchPolicies = async () => {
         setLoading(true);
@@ -48,13 +63,16 @@ function App() {
             }
 
             const data = await response.json();
-            setPolicies(data);
+            setAllPolicies(data);
             setLoading(false);
         } catch (error) {
             setMessage(`Error fetching policies: ${error.message}`);
             setLoading(false);
         }
     };
+
+    // Change page
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -81,7 +99,8 @@ function App() {
             }
 
             const createdPolicy = await response.json();
-            setPolicies([...policies, createdPolicy]);
+            setAllPolicies([createdPolicy, ...allPolicies]); // Add new policy at beginning
+            setCurrentPage(1); // Reset to first page
             setMessage('Policy created successfully!');
 
             // Reset form
@@ -181,35 +200,68 @@ function App() {
                     <h2>Existing Policies</h2>
                     {loading ? (
                         <p>Loading policies...</p>
-                    ) : policies.length === 0 ? (
+                    ) : allPolicies.length === 0 ? (
                         <p>No policies found</p>
                     ) : (
-                        <table className="policies-table">
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Status</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Created</th>
-                                <th>Updated</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {policies.map(policy => (
-                                <tr key={policy.id}>
-                                    <td>{policy.id}</td>
-                                    <td>{policy.name}</td>
-                                    <td>{policy.status}</td>
-                                    <td>{formatDate(policy.startDate)}</td>
-                                    <td>{formatDate(policy.endDate)}</td>
-                                    <td>{formatDateTime(policy.creationDateTime)}</td>
-                                    <td>{formatDateTime(policy.updateDateTime)}</td>
+                        <>
+                            <table className="policies-table">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Created</th>
+                                    <th>Updated</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                {displayedPolicies.map(policy => (
+                                    <tr key={policy.id}>
+                                        <td>{policy.id}</td>
+                                        <td>{policy.name}</td>
+                                        <td>{policy.status}</td>
+                                        <td>{formatDate(policy.startDate)}</td>
+                                        <td>{formatDate(policy.endDate)}</td>
+                                        <td>{formatDateTime(policy.creationDateTime)}</td>
+                                        <td>{formatDateTime(policy.updateDateTime)}</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+
+                            {/* Pagination Controls */}
+                            <div className="pagination">
+                                <button
+                                    onClick={() => paginate(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </button>
+
+                                {Array.from({ length: Math.ceil(allPolicies.length / policiesPerPage) }).map((_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => paginate(index + 1)}
+                                        className={currentPage === index + 1 ? 'active' : ''}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => paginate(currentPage + 1)}
+                                    disabled={currentPage === Math.ceil(allPolicies.length / policiesPerPage)}
+                                >
+                                    Next
+                                </button>
+                            </div>
+
+                            <div className="pagination-info">
+                                Showing {displayedPolicies.length} of {allPolicies.length} policies
+                            </div>
+                        </>
                     )}
                 </div>
             </header>
