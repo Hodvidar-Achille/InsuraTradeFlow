@@ -1,0 +1,12 @@
+.connection-status {
+    margin-bottom: 20px;
+}
+
+.connection-status h1 {
+    margin-bottom: 10px;
+}
+
+.connection-status p {
+    font-size: 16px;
+    color: #61dafb;
+}

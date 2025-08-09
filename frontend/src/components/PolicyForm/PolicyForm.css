@@ -1,0 +1,47 @@
+.policy-form {
+    background: #3a3f4b;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    width: 80%;
+    max-width: 500px;
+}
+
+.policy-form h2 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.policy-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.policy-form input,
+.policy-form select {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.policy-form button {
+    background-color: #61dafb;
+    border: none;
+    color: #282c34;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.policy-form button:hover {
+    background-color: #4fa8d3;
+}
