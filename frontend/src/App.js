@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import './App.css';
 
 function App() {
@@ -21,6 +21,8 @@ function App() {
         ? 'http://localhost:8080'
         : 'http://app:8080';
 
+    const [editablePolicies, setEditablePolicies] = useState({}); // { policyId: {field: value} }
+    const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
         // Initial greeting fetch
@@ -75,7 +77,7 @@ function App() {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setNewPolicy({
             ...newPolicy,
             [name]: value
@@ -125,6 +127,104 @@ function App() {
         if (!dateTimeString) return '-';
         const date = new Date(dateTimeString);
         return date.toLocaleString();
+    };
+
+    /* For making the table editable */
+    const toggleEditMode = () => {
+        if (isEditMode) {
+            // Cancel all changes when exiting edit mode
+            setEditablePolicies({});
+        }
+        setIsEditMode(!isEditMode);
+    };
+
+    const handleFieldChange = (policyId, field, value) => {
+        setEditablePolicies(prev => ({
+            ...prev,
+            [policyId]: {
+                ...prev[policyId],
+                [field]: value
+            }
+        }));
+    };
+
+    const saveChanges = async () => {
+        try {
+            // First validate all changes
+            for (const [policyId, changes] of Object.entries(editablePolicies)) {
+                if (changes.startDate && !validateDate(changes.startDate)) {
+                    throw new Error(`Invalid start date for policy ${policyId}`);
+                }
+                if (changes.endDate && !validateDate(changes.endDate)) {
+                    throw new Error(`Invalid end date for policy ${policyId}`);
+                }
+                if (changes.startDate && changes.endDate &&
+                    new Date(changes.startDate) > new Date(changes.endDate)) {
+                    throw new Error(`End date must be after start date for policy ${policyId}`);
+                }
+            }
+
+            // Prepare and send complete DTO for each modified policy
+            for (const [policyId, changes] of Object.entries(editablePolicies)) {
+                if (Object.keys(changes).length > 0) {
+                    // Find the original policy
+                    const originalPolicy = allPolicies.find(p => p.id.toString() === policyId);
+
+                    if (!originalPolicy) {
+                        throw new Error(`Policy ${policyId} not found`);
+                    }
+
+                    // Create complete DTO with merged changes
+                    const updatedPolicyDto = {
+                        id: originalPolicy.id,
+                        name: changes.name !== undefined ? changes.name : originalPolicy.name,
+                        status: changes.status !== undefined ? changes.status : originalPolicy.status,
+                        startDate: changes.startDate !== undefined ? changes.startDate : originalPolicy.startDate,
+                        endDate: changes.endDate !== undefined ? changes.endDate : originalPolicy.endDate,
+                    };
+
+                    // Send complete DTO
+                    const response = await fetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': 'Basic ' + btoa('user:password'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedPolicyDto)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Failed to update policy ${policyId}`);
+                    }
+                }
+            }
+
+            // Reset and refresh on success
+            setEditablePolicies({});
+            setIsEditMode(false);
+            fetchPolicies();
+            setMessage('All changes saved successfully!');
+        } catch (error) {
+            setMessage(`Error saving changes: ${error.message}`);
+        }
+    };
+
+    const cancelChanges = () => {
+        setEditablePolicies({});
+        setIsEditMode(false);
+    };
+
+    const validateDate = (dateString) => {
+        if (!dateString) return false;
+        const date = new Date(dateString);
+        return !isNaN(date.getTime());
+    };
+
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
     };
 
     return (
@@ -220,10 +320,65 @@ function App() {
                                 {displayedPolicies.map(policy => (
                                     <tr key={policy.id}>
                                         <td>{policy.id}</td>
-                                        <td>{policy.name}</td>
-                                        <td>{policy.status}</td>
-                                        <td>{formatDate(policy.startDate)}</td>
-                                        <td>{formatDate(policy.endDate)}</td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <input
+                                                    type="text"
+                                                    value={editablePolicies[policy.id]?.name || policy.name}
+                                                    onChange={(e) => handleFieldChange(policy.id, 'name', e.target.value)}
+                                                />
+                                            ) : (
+                                                policy.name
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <select
+                                                    value={editablePolicies[policy.id]?.status || policy.status}
+                                                    onChange={(e) => handleFieldChange(policy.id, 'status', e.target.value)}
+                                                >
+                                                    <option value="ACTIVE">ACTIVE</option>
+                                                    <option value="INACTIVE">INACTIVE</option>
+                                                </select>
+                                            ) : (
+                                                policy.status
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <div className="date-input-container">
+                                                    <input
+                                                        type="date"
+                                                        value={formatDateForInput(editablePolicies[policy.id]?.startDate || policy.startDate)}
+                                                        onChange={(e) => handleFieldChange(policy.id, 'startDate', e.target.value)}
+                                                        className={!validateDate(editablePolicies[policy.id]?.startDate) && editablePolicies[policy.id]?.startDate ? 'invalid-date' : ''}
+                                                    />
+                                                    {!validateDate(editablePolicies[policy.id]?.startDate) && editablePolicies[policy.id]?.startDate && (
+                                                        <span className="date-error">Invalid date</span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                formatDate(policy.startDate)
+                                            )}
+                                        </td>
+                                        <td>
+                                            {isEditMode ? (
+                                                <div className="date-input-container">
+                                                    <input
+                                                        type="date"
+                                                        value={formatDateForInput(editablePolicies[policy.id]?.endDate || policy.endDate)}
+                                                        onChange={(e) => handleFieldChange(policy.id, 'endDate', e.target.value)}
+                                                        className={!validateDate(editablePolicies[policy.id]?.endDate) && editablePolicies[policy.id]?.endDate ? 'invalid-date' : ''}
+                                                        min={formatDateForInput(editablePolicies[policy.id]?.startDate || policy.startDate)}
+                                                    />
+                                                    {!validateDate(editablePolicies[policy.id]?.endDate) && editablePolicies[policy.id]?.endDate && (
+                                                        <span className="date-error">Invalid date</span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                formatDate(policy.endDate)
+                                            )}
+                                        </td>
                                         <td>{formatDateTime(policy.creationDateTime)}</td>
                                         <td>{formatDateTime(policy.updateDateTime)}</td>
                                     </tr>
@@ -240,7 +395,7 @@ function App() {
                                     Previous
                                 </button>
 
-                                {Array.from({ length: Math.ceil(allPolicies.length / policiesPerPage) }).map((_, index) => (
+                                {Array.from({length: Math.ceil(allPolicies.length / policiesPerPage)}).map((_, index) => (
                                     <button
                                         key={index}
                                         onClick={() => paginate(index + 1)}
@@ -260,6 +415,32 @@ function App() {
 
                             <div className="pagination-info">
                                 Showing {displayedPolicies.length} of {allPolicies.length} policies
+                            </div>
+
+                            <div className="table-actions">
+                                <button onClick={toggleEditMode}>
+                                    {isEditMode ? (
+                                        <i className="lock-icon">🔒</i> // Lock icon
+                                    ) : (
+                                        <i className="unlock-icon">🔓</i> // Unlock icon
+                                    )}
+                                    {isEditMode ? 'Lock Editing' : 'Enable Editing'}
+                                </button>
+
+                                {isEditMode && (
+                                    <>
+                                        <button onClick={saveChanges}>
+                                            <i className="save-icon">💾</i> Save All
+                                        </button>
+                                        <button onClick={cancelChanges}>
+                                            <i className="cancel-icon">❌</i> Cancel
+                                        </button>
+                                    </>
+                                )}
+
+                                <button onClick={fetchPolicies}>
+                                    <i className="refresh-icon">🔄</i> Refresh
+                                </button>
                             </div>
                         </>
                     )}
