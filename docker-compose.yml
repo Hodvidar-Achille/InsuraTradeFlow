@@ -12,16 +12,16 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 10s
       retries: 10
 
   app:
     networks:
-      - app-network
+        - app-network
     hostname: app
-    build: ./backend
+    build: .
     container_name: insuratradeflow-app-v1
     ports:
       - "8080:8080"

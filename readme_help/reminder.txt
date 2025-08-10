@@ -13,16 +13,3 @@ SHOW TABLES;
 SHOW COLUMNS FROM insurance_policies;
 SELECT * FROM insurance_policies;
 
------
-to build from scratch:
-/Frontend (from root)
-cd frontend
-npm install
-npm run build
-
-/Backend (from root)
-cd backend
-mvn clean install
-
-from root
-Docker compose up --build
