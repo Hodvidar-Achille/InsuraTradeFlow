@@ -72,6 +72,7 @@ function App() {
                     onPageChange={setCurrentPage}
                     onRefresh={loadPolicies}
                     onUpdatePolicies={handleUpdatePolicies}
+                    apiUrl={apiUrl}
                 />
             </header>
         </div>

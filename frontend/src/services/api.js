@@ -53,10 +53,7 @@ export const updatePolicy = async (apiUrl, updatedPolicies, allPolicies) => {
             // Send complete DTO
             const response = await fetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': 'Basic ' + btoa('user:password'),
-                    'Content-Type': 'application/json'
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(updatedPolicyDto)
             });
 
@@ -75,3 +72,15 @@ const getAuthHeaders = () => ({
     'Authorization': 'Basic ' + btoa('user:password'),
     'Content-Type': 'application/json'
 });
+
+export const deletePolicy = async (apiUrl, policyId) => {
+    const response = await fetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to delete policy ${policyId}`);
+    }
+    return await response.json();
+};

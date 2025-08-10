@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import PolicyRow from './PolicyRow';
-import { formatDate, formatDateTime } from '../../utils/dateUtils';
+import {formatDate, formatDateTime} from '../../utils/dateUtils';
 import './PolicyTable.css';
+import {deletePolicy} from '../../services/api';
 
 const PolicyTable = ({
                          allPolicies,
@@ -10,7 +11,8 @@ const PolicyTable = ({
                          policiesPerPage,
                          onPageChange,
                          onRefresh,
-                         onUpdatePolicies
+                         onUpdatePolicies,
+                         apiUrl
                      }) => {
     const [editablePolicies, setEditablePolicies] = useState({});
     const [isEditMode, setIsEditMode] = useState(false);
@@ -49,6 +51,15 @@ const PolicyTable = ({
 
     const paginate = (pageNumber) => onPageChange(pageNumber);
 
+    const handleDelete = async (policyId) => {
+        try {
+            await deletePolicy(apiUrl, policyId);
+            onRefresh(); // Refresh the table after deletion
+        } catch (error) {
+            console.error('Error deleting policy:', error);
+        }
+    };
+
     return (
         <div className="policy-list">
             <h2>Existing Policies</h2>
@@ -80,6 +91,7 @@ const PolicyTable = ({
                                 onFieldChange={handleFieldChange}
                                 formatDate={formatDate}
                                 formatDateTime={formatDateTime}
+                                onDelete={handleDelete}
                             />
                         ))}
                         </tbody>
@@ -93,7 +105,7 @@ const PolicyTable = ({
                             Previous
                         </button>
 
-                        {Array.from({ length: Math.ceil(allPolicies.length / policiesPerPage) }).map((_, index) => (
+                        {Array.from({length: Math.ceil(allPolicies.length / policiesPerPage)}).map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => paginate(index + 1)}
