@@ -12,14 +12,28 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 5s
       timeout: 10s
       retries: 10
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: turtle
+      KC_PROXY: edge
+    command: [ "start-dev" ]
+    ports:
+      - "8181:8080"  # Keycloak web interface
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+
   app:
     networks:
-        - app-network
+      - app-network
     hostname: app
     build: .
     container_name: insuratradeflow-app-v1
@@ -33,10 +47,16 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
     environment:
-      DATABASE_URL: jdbc:mysql://mysql:3306/InsuraTradeFlow
-      DATABASE_USER: InsuraTradeFlowUser
-      DATABASE_PASSWORD: InsuraTradeFlowPassword
+      - KEYCLOAK_URL=http://keycloak:8080
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${KEYCLOAK_URL}/realms/InsuraTradeFlow
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${KEYCLOAK_URL}/realms/InsuraTradeFlow/protocol/openid-connect/certs
+      - DATABASE_URL=jdbc:mysql://mysql:3306/InsuraTradeFlow
+      - DATABASE_USER=InsuraTradeFlowUser
+      - DATABASE_PASSWORD=InsuraTradeFlowPassword
+      - SPRING_PROFILES_ACTIVE=docker,keycloak
     restart: on-failure
 
   frontend:
@@ -47,8 +67,12 @@ services:
       - app-network
     environment:
       - REACT_APP_API_URL=http://app:8080
+      - REACT_APP_KEYCLOAK_URL=http://localhost:8181
+      - REACT_APP_KEYCLOAK_REALM=InsuraTradeFlow
+      - REACT_APP_KEYCLOAK_CLIENT_ID=insuratrade-frontend
     depends_on:
       - app
+      - keycloak
 
 networks:
   app-network:

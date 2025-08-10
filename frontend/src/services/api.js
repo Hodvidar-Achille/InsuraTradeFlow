@@ -1,31 +1,60 @@
-// Auth headers
-const getAuthHeaders = () => ({
-    'Authorization': 'Basic ' + btoa('user:password'),
-    'Content-Type': 'application/json'
-});
+import keycloak from "../auth/keycloak";
 
-// Base API configuration
-const BASE_CONFIG = {
-    headers: getAuthHeaders()
+// Helper function to ensure we have a valid token
+const ensureToken = async () => {
+    try {
+        // Refresh token if it's expired or about to expire (within 30 seconds)
+        const refreshed = await keycloak.updateToken(30);
+        if (refreshed) {
+            console.log('Token was refreshed');
+        }
+        return keycloak.token;
+    } catch (error) {
+        console.error('Failed to refresh token:', error);
+        keycloak.login(); // Redirect to login if token refresh fails
+        throw new Error('Authentication required');
+    }
 };
 
-// Helper function to handle API responses
+// Get auth headers with fresh token
+const getAuthHeaders = async () => {
+    const token = await ensureToken();
+    return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+};
+
+// Enhanced response handler
 const handleResponse = async (response) => {
     if (!response.ok) {
+        // Handle 401 Unauthorized specifically
+        if (response.status === 401) {
+            keycloak.login(); // Redirect to login
+            throw new Error('Session expired. Please login again.');
+        }
+
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     return response.json();
 };
 
-// Generic fetch wrapper
+// Generic fetch wrapper with token refresh
 const apiFetch = async (url, method = 'GET', body = null) => {
+    const headers = await getAuthHeaders();
     const config = {
-        ...BASE_CONFIG,
+        headers,
         method,
         body: body ? JSON.stringify(body) : null
     };
-    return fetch(url, config).then(handleResponse);
+
+    try {
+        return await fetch(url, config).then(handleResponse);
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
 };
 
 // API methods
@@ -38,46 +67,19 @@ export const fetchGreeting = async (apiUrl, setMessage) => {
     }
 };
 
-export const createPolicy = async (apiUrl, policyData) => {
-    return apiFetch(`${apiUrl}/api/v1/insurance-policies`, 'POST', policyData);
-};
-
 export const fetchPolicies = async (apiUrl, page = 0, size = 10, sort = 'name,asc') => {
     const params = new URLSearchParams({page, size, sort});
     return apiFetch(`${apiUrl}/api/v1/insurance-policies?${params}`);
 };
 
-export const updatePolicy = async (apiUrl, updatedPolicies, allPolicies) => {
-    const results = [];
+export const createPolicy = async (apiUrl, policyData) => {
+    return apiFetch(`${apiUrl}/api/v1/insurance-policies`, 'POST', policyData);
+};
 
-    for (const [policyId, changes] of Object.entries(updatedPolicies)) {
-        if (Object.keys(changes).length > 0) {
-            const originalPolicy = allPolicies.find(p => p.id.toString() === policyId);
-            if (!originalPolicy) throw new Error(`Policy ${policyId} not found`);
-
-            const updatedPolicyDto = {
-                id: originalPolicy.id,
-                name: changes.name ?? originalPolicy.name,
-                status: changes.status ?? originalPolicy.status,
-                startDate: changes.startDate ?? originalPolicy.startDate,
-                endDate: changes.endDate ?? originalPolicy.endDate,
-            };
-
-            const result = await apiFetch(
-                `${apiUrl}/api/v1/insurance-policies/${policyId}`,
-                'PUT',
-                updatedPolicyDto
-            );
-            results.push(result);
-        }
-    }
-
-    return results;
+export const updatePolicy = async (apiUrl, policyId, policyData) => {
+    return apiFetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, 'PUT', policyData);
 };
 
 export const deletePolicy = async (apiUrl, policyId) => {
-    return apiFetch(
-        `${apiUrl}/api/v1/insurance-policies/${policyId}`,
-        'DELETE'
-    );
+    return apiFetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, 'DELETE');
 };

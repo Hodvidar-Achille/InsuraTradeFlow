@@ -1,9 +1,13 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import './App.css';
 import ConnectionStatus from './components/ConnectionStatus/ConnectionStatus';
 import PolicyForm from './components/PolicyForm/PolicyForm';
 import PolicyTable from './components/PolicyTable/PolicyTable';
-import {fetchGreeting, fetchPolicies, createPolicy, updatePolicy} from './services/api';
+import {createPolicy, fetchGreeting, fetchPolicies, updatePolicy} from './services/api';
+import {AuthProvider} from './auth/AuthContext';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import LoginPage from './auth/LoginPage';
+import PrivateRoute from './auth/PrivateRoute';
 
 function App() {
     const [message, setMessage] = useState('Loading...');
@@ -74,27 +78,41 @@ function App() {
     };
 
     return (
-        <div className="App">
-            <header className="App-header">
-                <ConnectionStatus message={message} apiUrl={apiUrl}/>
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<LoginPage/>}/>
+                    <Route
+                        path="/"
+                        element={
+                            <PrivateRoute>
+                                <div className="App">
+                                    <header className="App-header">
+                                        <ConnectionStatus message={message} apiUrl={apiUrl}/>
 
-                <PolicyForm onCreatePolicy={handleCreatePolicy}/>
+                                        <PolicyForm onCreatePolicy={handleCreatePolicy}/>
 
-                <PolicyTable
-                    policies={policies}
-                    loading={loading}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalElements={totalElements}
-                    pageSize={pageSize}
-                    onPageChange={handlePageChange}
-                    onSortChange={handleSortChange}
-                    onRefresh={() => loadPolicies(currentPage, pageSize, sort)}
-                    onUpdatePolicies={handleUpdatePolicies}
-                    apiUrl={apiUrl}
-                />
-            </header>
-        </div>
+                                        <PolicyTable
+                                            policies={policies}
+                                            loading={loading}
+                                            currentPage={currentPage}
+                                            totalPages={totalPages}
+                                            totalElements={totalElements}
+                                            pageSize={pageSize}
+                                            onPageChange={handlePageChange}
+                                            onSortChange={handleSortChange}
+                                            onRefresh={() => loadPolicies(currentPage, pageSize, sort)}
+                                            onUpdatePolicies={handleUpdatePolicies}
+                                            apiUrl={apiUrl}
+                                        />
+                                    </header>
+                                </div>
+                            </PrivateRoute>
+                        }
+                    />
+                </Routes>
+            </Router>
+        </AuthProvider>
     );
 }
 

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,11 +44,24 @@ public class InsurancePolicyDao {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updateDateTime;
 
+    @Column(nullable = true)
+    private String createdBy;
+
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         creationDateTime = now;
         updateDateTime = now;
+
+        // For existing records being updated
+        if (this.createdBy == null) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                this.createdBy = authentication.getName();
+            } else {
+                this.createdBy = "ADMIN";
+            }
+        }
     }
 
     @PreUpdate

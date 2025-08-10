@@ -52,7 +52,7 @@ class InsurancePolicyServiceTest {
     @Test
     void createInsurancePolicy() throws InsurancePolicyValidationException {
         InsurancePolicyDto policyToCreate = new InsurancePolicyDto(null, "Policy One", "ACTIVE", LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
-        InsurancePolicyDao mockedPolicy = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
+        InsurancePolicyDao mockedPolicy = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null, null);
 
         when(insurancePolicyRepository.save(ArgumentMatchers.any(InsurancePolicyDao.class))).thenReturn(mockedPolicy);
 
@@ -69,9 +69,9 @@ class InsurancePolicyServiceTest {
     void getAllInsurancePolicies() {
         // 1. Create test data
         InsurancePolicyDao mockedPolicy1 = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE,
-                LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
+                LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null, null);
         InsurancePolicyDao mockedPolicy2 = new InsurancePolicyDao(2L, "Policy Two", PolicyStatus.INACTIVE,
-                LocalDate.of(2023, 2, 1), LocalDate.of(2024, 2, 1), null, null);
+                LocalDate.of(2023, 2, 1), LocalDate.of(2024, 2, 1), null, null, null);
 
         // 2. Create a page of results
         Page<InsurancePolicyDao> mockedPage = new PageImpl<>(
@@ -107,7 +107,7 @@ class InsurancePolicyServiceTest {
 
     @Test
     void getInsurancePolicyById() {
-        InsurancePolicyDao mockedPolicy = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
+        InsurancePolicyDao mockedPolicy = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null, null);
 
         when(insurancePolicyRepository.findById(1L)).thenReturn(Optional.of(mockedPolicy));
         InsurancePolicy policy = insurancePolicyService.getInsurancePolicyById(1L);
@@ -120,7 +120,7 @@ class InsurancePolicyServiceTest {
     @Test
     void updateInsurancePolicy() throws InsurancePolicyValidationException {
         Long policyId = 1L;
-        InsurancePolicyDao existingPolicyDao = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
+        InsurancePolicyDao existingPolicyDao = new InsurancePolicyDao(1L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null, null);
         InsurancePolicyDto insurancePolicyDto = new InsurancePolicyDto(null, "Policy One", "ACTIVE", LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
 
         when(insurancePolicyRepository.findById(policyId)).thenReturn(Optional.of(existingPolicyDao));
@@ -139,7 +139,7 @@ class InsurancePolicyServiceTest {
     @Test
     void deleteInsurancePolicy() {
         Long policyIdToDelete = 1L;
-        InsurancePolicyDao mockedPolicy = new InsurancePolicyDao(policyIdToDelete, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
+        InsurancePolicyDao mockedPolicy = new InsurancePolicyDao(policyIdToDelete, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null, null);
 
         when(insurancePolicyRepository.findById(policyIdToDelete)).thenReturn(Optional.of(mockedPolicy));
         doNothing().when(insurancePolicyRepository).delete(mockedPolicy);
