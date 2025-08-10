@@ -1,86 +1,83 @@
+// Auth headers
+const getAuthHeaders = () => ({
+    'Authorization': 'Basic ' + btoa('user:password'),
+    'Content-Type': 'application/json'
+});
+
+// Base API configuration
+const BASE_CONFIG = {
+    headers: getAuthHeaders()
+};
+
+// Helper function to handle API responses
+const handleResponse = async (response) => {
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+};
+
+// Generic fetch wrapper
+const apiFetch = async (url, method = 'GET', body = null) => {
+    const config = {
+        ...BASE_CONFIG,
+        method,
+        body: body ? JSON.stringify(body) : null
+    };
+    return fetch(url, config).then(handleResponse);
+};
+
+// API methods
 export const fetchGreeting = async (apiUrl, setMessage) => {
     try {
-        const response = await fetch(`${apiUrl}/api/greeting`, {
-            headers: getAuthHeaders()
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
+        const data = await apiFetch(`${apiUrl}/api/greeting`);
         setMessage(data.message);
     } catch (error) {
         setMessage(`Error: ${error.message}`);
     }
 };
 
-export const fetchPolicies = async (apiUrl) => {
-    const response = await fetch(`${apiUrl}/api/v1/insurance-policies`, {
-        headers: getAuthHeaders()
-    });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+export const createPolicy = async (apiUrl, policyData) => {
+    return apiFetch(`${apiUrl}/api/v1/insurance-policies`, 'POST', policyData);
 };
 
-export const createPolicy = async (apiUrl, policyData) => {
-    const response = await fetch(`${apiUrl}/api/v1/insurance-policies`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(policyData)
-    });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+export const fetchPolicies = async (apiUrl, page = 0, size = 10, sort = 'name,asc') => {
+    const params = new URLSearchParams({page, size, sort});
+    return apiFetch(`${apiUrl}/api/v1/insurance-policies?${params}`);
 };
 
 export const updatePolicy = async (apiUrl, updatedPolicies, allPolicies) => {
     const results = [];
-    // Prepare and send complete DTO for each modified policy
+
     for (const [policyId, changes] of Object.entries(updatedPolicies)) {
         if (Object.keys(changes).length > 0) {
-            // Find the original policy
             const originalPolicy = allPolicies.find(p => p.id.toString() === policyId);
+            if (!originalPolicy) throw new Error(`Policy ${policyId} not found`);
 
-            if (!originalPolicy) {
-                throw new Error(`Policy ${policyId} not found`);
-            }
-
-            // Create complete DTO with merged changes
             const updatedPolicyDto = {
                 id: originalPolicy.id,
-                name: changes.name !== undefined ? changes.name : originalPolicy.name,
-                status: changes.status !== undefined ? changes.status : originalPolicy.status,
-                startDate: changes.startDate !== undefined ? changes.startDate : originalPolicy.startDate,
-                endDate: changes.endDate !== undefined ? changes.endDate : originalPolicy.endDate,
+                name: changes.name ?? originalPolicy.name,
+                status: changes.status ?? originalPolicy.status,
+                startDate: changes.startDate ?? originalPolicy.startDate,
+                endDate: changes.endDate ?? originalPolicy.endDate,
             };
 
-            // Send complete DTO
-            const response = await fetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, {
-                method: 'PUT',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(updatedPolicyDto)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to update policy ${policyId}`);
-            }
-
-            results.push(await response.json());
+            const result = await apiFetch(
+                `${apiUrl}/api/v1/insurance-policies/${policyId}`,
+                'PUT',
+                updatedPolicyDto
+            );
+            results.push(result);
         }
     }
+
     return results;
 };
 
-const getAuthHeaders = () => ({
-    'Authorization': 'Basic ' + btoa('user:password'),
-    'Content-Type': 'application/json'
-});
-
 export const deletePolicy = async (apiUrl, policyId) => {
-    const response = await fetch(`${apiUrl}/api/v1/insurance-policies/${policyId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-    });
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to delete policy ${policyId}`);
-    }
-    return await response.json();
+    return apiFetch(
+        `${apiUrl}/api/v1/insurance-policies/${policyId}`,
+        'DELETE'
+    );
 };

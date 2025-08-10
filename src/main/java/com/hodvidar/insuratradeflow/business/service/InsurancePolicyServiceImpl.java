@@ -9,10 +9,11 @@ import com.hodvidar.insuratradeflow.persistance.dao.InsurancePolicyDao;
 import com.hodvidar.insuratradeflow.persistance.repository.InsurancePolicyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -45,10 +46,9 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
 
 
     @Override
-    public List<InsurancePolicy> getAllInsurancePolicies() {
-        return insurancePolicyRepository.findAll().stream()
-                .map(insurancePolicyMapper::entityToModel)
-                .toList();
+    public Page<InsurancePolicy> getAllInsurancePolicies(Pageable pageable) {
+        return insurancePolicyRepository.findAll(pageable)
+                .map(insurancePolicyMapper::entityToModel);
     }
 
     @Override

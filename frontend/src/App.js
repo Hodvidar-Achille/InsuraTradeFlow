@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import './App.css';
 import ConnectionStatus from './components/ConnectionStatus/ConnectionStatus';
 import PolicyForm from './components/PolicyForm/PolicyForm';
 import PolicyTable from './components/PolicyTable/PolicyTable';
-import { fetchGreeting, fetchPolicies, createPolicy, updatePolicy } from './services/api';
+import {fetchGreeting, fetchPolicies, createPolicy, updatePolicy} from './services/api';
 
 function App() {
     const [message, setMessage] = useState('Loading...');
-    const [allPolicies, setAllPolicies] = useState([]);
+    const [policies, setPolicies] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const policiesPerPage = 5;
+    const [currentPage, setCurrentPage] = useState(0); // Changed to 0-based index
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [pageSize, setPageSize] = useState(10); // Configurable page size
+    const [sort, setSort] = useState('name,asc'); // Default sorting
 
     const apiUrl = window.location.hostname === 'localhost'
         ? 'http://localhost:8080'
@@ -18,14 +21,16 @@ function App() {
 
     useEffect(() => {
         fetchGreeting(apiUrl, setMessage);
-        loadPolicies();
+        loadPolicies(currentPage, pageSize, sort);
     }, [apiUrl]);
 
-    const loadPolicies = () => {
+    const loadPolicies = (page, size, sort) => {
         setLoading(true);
-        fetchPolicies(apiUrl)
+        fetchPolicies(apiUrl, page, size, sort)
             .then(data => {
-                setAllPolicies(data);
+                setPolicies(data.content);
+                setTotalPages(data.totalPages);
+                setTotalElements(data.totalElements);
                 setLoading(false);
             })
             .catch(error => {
@@ -37,8 +42,8 @@ function App() {
     const handleCreatePolicy = (policyData) => {
         createPolicy(apiUrl, policyData)
             .then(createdPolicy => {
-                setAllPolicies([createdPolicy, ...allPolicies]);
-                setCurrentPage(1);
+                // Refresh first page after creation
+                loadPolicies(0, pageSize, sort);
                 setMessage('Policy created successfully!');
             })
             .catch(error => {
@@ -46,10 +51,11 @@ function App() {
             });
     };
 
-    const handleUpdatePolicies = (updatedPolicies, allPolicies) => {
-        updatePolicy(apiUrl, updatedPolicies, allPolicies)
+    const handleUpdatePolicies = (updatedPolicies) => {
+        updatePolicy(apiUrl, updatedPolicies, policies)
             .then(() => {
-                loadPolicies();
+                // Refresh current page after update
+                loadPolicies(currentPage, pageSize, sort);
                 setMessage('All changes saved successfully!');
             })
             .catch(error => {
@@ -57,20 +63,33 @@ function App() {
             });
     };
 
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        loadPolicies(newPage, pageSize, sort);
+    };
+
+    const handleSortChange = (newSort) => {
+        setSort(newSort);
+        loadPolicies(0, pageSize, newSort); // Reset to first page when sorting changes
+    };
+
     return (
         <div className="App">
             <header className="App-header">
-                <ConnectionStatus message={message} apiUrl={apiUrl} />
+                <ConnectionStatus message={message} apiUrl={apiUrl}/>
 
-                <PolicyForm onCreatePolicy={handleCreatePolicy} />
+                <PolicyForm onCreatePolicy={handleCreatePolicy}/>
 
                 <PolicyTable
-                    allPolicies={allPolicies}
+                    policies={policies}
                     loading={loading}
                     currentPage={currentPage}
-                    policiesPerPage={policiesPerPage}
-                    onPageChange={setCurrentPage}
-                    onRefresh={loadPolicies}
+                    totalPages={totalPages}
+                    totalElements={totalElements}
+                    pageSize={pageSize}
+                    onPageChange={handlePageChange}
+                    onSortChange={handleSortChange}
+                    onRefresh={() => loadPolicies(currentPage, pageSize, sort)}
                     onUpdatePolicies={handleUpdatePolicies}
                     apiUrl={apiUrl}
                 />

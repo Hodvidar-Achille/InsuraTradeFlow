@@ -6,11 +6,13 @@ import com.hodvidar.insuratradeflow.business.service.InsurancePolicyService;
 import com.hodvidar.insuratradeflow.business.validation.InsurancePolicyValidationException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/insurance-policies")
@@ -34,10 +36,23 @@ public class InsurancePolicyController {
     }
 
     @GetMapping
-    public List<InsurancePolicyDto> getAllInsurancePolicies() {
-        return insurancePolicyService.getAllInsurancePolicies().stream()
-                .map(insurancePolicyMapper::modelToDto)
-                .toList();
+    public ResponseEntity<Page<InsurancePolicyDto>> getAllInsurancePolicies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(defaultValue = "name,asc") String[] sort) {
+
+        Sort sorting = Sort.by(sort[0]);
+        if (sort.length > 1 && sort[1].equalsIgnoreCase("desc")) {
+            sorting = sorting.descending();
+        } else {
+            sorting = sorting.ascending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sorting);
+        Page<InsurancePolicyDto> policyPage = insurancePolicyService.getAllInsurancePolicies(pageable)
+                .map(insurancePolicyMapper::modelToDto);
+
+        return ResponseEntity.ok(policyPage);
     }
 
     @GetMapping("/{id}")

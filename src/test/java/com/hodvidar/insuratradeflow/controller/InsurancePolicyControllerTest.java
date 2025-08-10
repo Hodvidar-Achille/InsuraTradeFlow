@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -66,24 +67,60 @@ class InsurancePolicyControllerTest {
 
     @Test
     void getAllInsurancePolicies() throws Exception {
-        InsurancePolicy mockedPolicy1 = new InsurancePolicy(100L, "Policy One", PolicyStatus.ACTIVE, LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
-        InsurancePolicy mockedPolicy2 = new InsurancePolicy(200L, "Policy Two", PolicyStatus.INACTIVE, LocalDate.of(2023, 2, 1), LocalDate.of(2024, 2, 1), null, null);
+        // Create test data
+        InsurancePolicy mockedPolicy1 = new InsurancePolicy(100L, "Policy One", PolicyStatus.ACTIVE,
+                LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), null, null);
+        InsurancePolicy mockedPolicy2 = new InsurancePolicy(200L, "Policy Two", PolicyStatus.INACTIVE,
+                LocalDate.of(2023, 2, 1), LocalDate.of(2024, 2, 1), null, null);
 
-        when(insurancePolicyService.getAllInsurancePolicies()).thenReturn(List.of(mockedPolicy1, mockedPolicy2));
+        // Create a mock page
+        Page<InsurancePolicy> mockPage = new PageImpl<>(
+                List.of(mockedPolicy1, mockedPolicy2),
+                PageRequest.of(0, 100, Sort.by("name").ascending()),
+                2L
+        );
 
-        mockMvc.perform(get("/api/v1/insurance-policies"))
+        // Mock the service call
+        when(insurancePolicyService.getAllInsurancePolicies(any(Pageable.class))).thenReturn(mockPage);
+
+        // Perform the request with pagination parameters
+        mockMvc.perform(get("/api/v1/insurance-policies")
+                        .param("page", "0")
+                        .param("size", "100")
+                        .param("sort", "name,asc"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(100))
-                .andExpect(jsonPath("$[0].name").value("Policy One"))
-                .andExpect(jsonPath("$[0].status").value("ACTIVE"))
-                .andExpect(jsonPath("$[0].startDate").value("2023-01-01"))
-                .andExpect(jsonPath("$[0].endDate").value("2024-01-01"))
-                .andExpect(jsonPath("$[1].id").value(200))
-                .andExpect(jsonPath("$[1].name").value("Policy Two"))
-                .andExpect(jsonPath("$[1].status").value("INACTIVE"))
-                .andExpect(jsonPath("$[1].startDate").value("2023-02-01"))
-                .andExpect(jsonPath("$[1].endDate").value("2024-02-01"));
+
+                // Verify pagination structure
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(2))
+
+                // Verify first policy
+                .andExpect(jsonPath("$.content[0].id").value(100))
+                .andExpect(jsonPath("$.content[0].name").value("Policy One"))
+                .andExpect(jsonPath("$.content[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.content[0].startDate").value("2023-01-01"))
+                .andExpect(jsonPath("$.content[0].endDate").value("2024-01-01"))
+
+                // Verify second policy
+                .andExpect(jsonPath("$.content[1].id").value(200))
+                .andExpect(jsonPath("$.content[1].name").value("Policy Two"))
+                .andExpect(jsonPath("$.content[1].status").value("INACTIVE"))
+                .andExpect(jsonPath("$.content[1].startDate").value("2023-02-01"))
+                .andExpect(jsonPath("$.content[1].endDate").value("2024-02-01"))
+
+                // Verify pagination metadata
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(100))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.last").value(true))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.size").value(100))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.sort.sorted").value(true))
+                .andExpect(jsonPath("$.sort.unsorted").value(false))
+                .andExpect(jsonPath("$.sort.empty").value(false));
     }
 
     @Test
