@@ -5,9 +5,11 @@ import com.hodvidar.insuratradeflow.business.domain.InsurancePolicy;
 import com.hodvidar.insuratradeflow.business.mapper.InsurancePolicyMapper;
 import com.hodvidar.insuratradeflow.business.validation.InsurancePolicyValidationException;
 import com.hodvidar.insuratradeflow.business.validation.InsurancePolicyValidator;
+import com.hodvidar.insuratradeflow.eventsourcing.command.DeleteInsurancePolicyCommand;
 import com.hodvidar.insuratradeflow.persistance.dao.InsurancePolicyDao;
 import com.hodvidar.insuratradeflow.persistance.repository.InsurancePolicyRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,13 +27,17 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
     private final InsurancePolicyMapper insurancePolicyMapper;
     private final InsurancePolicyValidator insurancePolicyValidator;
 
+    private final CommandGateway commandGateway;
+
     @Autowired
     public InsurancePolicyServiceImpl(final InsurancePolicyRepository insurancePolicyRepository,
                                       final InsurancePolicyMapper insurancePolicyMapper,
-                                      final InsurancePolicyValidator insurancePolicyValidator) {
+                                      final InsurancePolicyValidator insurancePolicyValidator,
+                                      final CommandGateway commandGateway) {
         this.insurancePolicyRepository = insurancePolicyRepository;
         this.insurancePolicyMapper = insurancePolicyMapper;
         this.insurancePolicyValidator = insurancePolicyValidator;
+        this.commandGateway = commandGateway;
     }
 
     @Override
@@ -96,6 +102,7 @@ public class InsurancePolicyServiceImpl implements InsurancePolicyService {
             throw new IllegalArgumentException("No Insurance Policy for given id '" + id + "'");
         } else {
             final InsurancePolicyDao insurancePolicyDao = existingInsurancePolicyDao.get();
+            commandGateway.sendAndWait(new DeleteInsurancePolicyCommand(id, insurancePolicyMapper.entityToModel(insurancePolicyDao)));
             insurancePolicyRepository.delete(insurancePolicyDao);
             log.info("Deleted an Insurance Policy : {}", insurancePolicyDao);
         }

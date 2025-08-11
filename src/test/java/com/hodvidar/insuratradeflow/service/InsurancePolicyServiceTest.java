@@ -11,6 +11,7 @@ import com.hodvidar.insuratradeflow.business.validation.InsurancePolicyValidatio
 import com.hodvidar.insuratradeflow.business.validation.InsurancePolicyValidator;
 import com.hodvidar.insuratradeflow.persistance.dao.InsurancePolicyDao;
 import com.hodvidar.insuratradeflow.persistance.repository.InsurancePolicyRepository;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
@@ -44,6 +45,9 @@ class InsurancePolicyServiceTest {
 
     @Mock
     private InsurancePolicyValidator insurancePolicyValidator;
+
+    @Mock
+    private CommandGateway commandGateway;
 
     @InjectMocks
     private InsurancePolicyServiceImpl insurancePolicyService;

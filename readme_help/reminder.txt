@@ -13,3 +13,6 @@ SHOW TABLES;
 SHOW COLUMNS FROM insurance_policies;
 SELECT * FROM insurance_policies;
 
+SHOW COLUMNS FROM deleted_policies;
+SELECT * FROM deleted_policies;
+
