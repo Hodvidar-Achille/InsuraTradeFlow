@@ -3,7 +3,6 @@ import PolicyRow from './PolicyRow';
 import {formatDate, formatDateTime} from '../../utils/dateUtils';
 import './PolicyTable.css';
 import {deletePolicy} from '../../services/api';
-import SearchFilter from '../SearchFilter/SearchFilter';
 
 const PolicyTable = ({
                          policies,
@@ -69,9 +68,6 @@ const PolicyTable = ({
 
     return (
         <div className="policy-list">
-            <SearchFilter onFilterChange={() => {
-            }}/>
-
             <h2>Existing Policies</h2>
             {loading ? (
                 <p>Loading policies...</p>
