@@ -20,6 +20,8 @@ Frontend App:
 http://localhost:3000/
 http://localhost:8080/swagger-ui/index.html#/
 
+(!) MUST BE DONE when starting for first time go-to http://localhost:8024/
+and perform initialization of the Axon server (Otherwise the deletion have issue) (TODO fix this)
 Axon Dashboard:
 http://localhost:8024/eventstore/Search
 http://localhost:8024/swagger-ui/index.html#/

@@ -20,6 +20,10 @@ const DeletedPolicies = ({ apiUrl }) => {
         }
     };
 
+    const formatDateTime = (dateString) => {
+        return new Date(dateString).toLocaleString();
+    };
+
     useEffect(() => {
         if (showDeleted) {
             loadDeletedPolicies();
@@ -66,9 +70,9 @@ const DeletedPolicies = ({ apiUrl }) => {
                                 <td>{policy.status}</td>
                                 <td>{policy.startDate}</td>
                                 <td>{policy.endDate}</td>
-                                <td>{policy.creationDateTime}</td>
-                                <td>{policy.updateDateTime}</td>
-                                <td>{policy.deletionDateTime}</td>
+                                <td>{formatDateTime(policy.creationDateTime)}</td>
+                                <td>{formatDateTime(policy.updateDateTime)}</td>
+                                <td>{formatDateTime(policy.deletionDateTime)}</td>
                             </tr>
                         ))}
                         </tbody>
