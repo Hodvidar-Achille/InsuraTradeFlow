@@ -9,6 +9,7 @@ import org.axonframework.spring.stereotype.Aggregate;
 
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
+// Beginning of CQRS and Event-Sourcing design
 @Slf4j
 @Aggregate
 public class InsurancePolicyAggregate {

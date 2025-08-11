@@ -16,3 +16,15 @@ SELECT * FROM insurance_policies;
 SHOW COLUMNS FROM deleted_policies;
 SELECT * FROM deleted_policies;
 
+Frontend App:
+http://localhost:3000/
+http://localhost:8080/swagger-ui/index.html#/
+
+Axon Dashboard:
+http://localhost:8024/eventstore/Search
+http://localhost:8024/swagger-ui/index.html#/
+
+For rebuilding frontend
+cd frontend
+npm install
+npm run build

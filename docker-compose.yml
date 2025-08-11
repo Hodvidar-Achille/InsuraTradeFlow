@@ -77,8 +77,8 @@ services:
       AXON_AXONSERVER_ENABLED: "true"
 
       # Optional but recommended for debugging
-      LOGGING_LEVEL_ORG_AXONFRAMEWORK: DEBUG
-      LOGGING_LEVEL_IO_AXONIQ: DEBUG
+      #LOGGING_LEVEL_ORG_AXONFRAMEWORK: DEBUG
+      #LOGGING_LEVEL_IO_AXONIQ: DEBUG
     restart: unless-stopped
 
   frontend:

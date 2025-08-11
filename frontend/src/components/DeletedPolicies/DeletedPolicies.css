@@ -1,0 +1,59 @@
+.deleted-policies-container {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.toggle-deleted-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.toggle-deleted-btn:hover {
+    background-color: #5a6268;
+}
+
+.deleted-policies-table {
+    margin-top: 10px;
+}
+
+.deleted-policies-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.deleted-policies-table th,
+.deleted-policies-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.deleted-policies-table th {
+    background-color: #e9ecef;
+}
+
+.refresh-btn {
+    background-color: #17a2b8;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.refresh-btn:hover {
+    background-color: #138496;
+}
+
+.refresh-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}

@@ -4,6 +4,7 @@ import ConnectionStatus from './components/ConnectionStatus/ConnectionStatus';
 import PolicyForm from './components/PolicyForm/PolicyForm';
 import PolicyTable from './components/PolicyTable/PolicyTable';
 import {fetchGreeting, fetchPolicies, createPolicy, updatePolicy} from './services/api';
+import DeletedPolicies from './components/DeletedPolicies/DeletedPolicies';
 
 function App() {
     const [message, setMessage] = useState('Loading...');
@@ -93,6 +94,8 @@ function App() {
                     onUpdatePolicies={handleUpdatePolicies}
                     apiUrl={apiUrl}
                 />
+
+                <DeletedPolicies apiUrl={apiUrl} />
             </header>
         </div>
     );
