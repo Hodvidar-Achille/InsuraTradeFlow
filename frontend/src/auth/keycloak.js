@@ -1,9 +1,9 @@
 import Keycloak from 'keycloak-js';
 
 const keycloakConfig = {
-    url: 'http://localhost:8181',
-    realm: 'InsuraTradeFlow',
-    clientId: 'insuratrade-frontend'
+    url: process.env.REACT_APP_KEYCLOAK_URL,
+    realm: process.env.REACT_APP_KEYCLOAK_REALM,
+    clientId: process.env.REACT_APP_KEYCLOAK_CLIENT_ID
 };
 
 // Initialize Keycloak

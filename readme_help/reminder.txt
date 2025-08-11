@@ -13,6 +13,9 @@ SHOW TABLES;
 SHOW COLUMNS FROM insurance_policies;
 SELECT * FROM insurance_policies;
 
+Command to see the keycloak console:
+http://localhost:8181
+
 frontend folder may need commands:
 npm install
 npm install keycloak-js
