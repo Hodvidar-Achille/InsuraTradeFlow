@@ -11,17 +11,46 @@ services:
       MYSQL_PASSWORD: InsuraTradeFlowPassword
     ports:
       - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 10s
       retries: 10
+    restart: unless-stopped
+
+  axon-server:
+    image: axoniq/axonserver:latest
+    container_name: axonserver
+    ports:
+      - "8024:8024"  # Admin UI
+      - "8124:8124"  # HTTP API
+      - "8224:8224"  # gRPC API
+    networks:
+      - app-network
+    environment:
+      AXONIQ_AXONSERVER_DEVMODE_ENABLED: "true"
+      AXONIQ_AXONSERVER_NAME: insuratradeflow-axon
+    volumes:
+      - axonserver-data:/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8024" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
   app:
     networks:
         - app-network
     hostname: app
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: insuratradeflow-app-v1
     ports:
       - "8080:8080"
@@ -33,23 +62,44 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      axon-server:
+        condition: service_started
     environment:
+      # Existing DB config
       DATABASE_URL: jdbc:mysql://mysql:3306/InsuraTradeFlow
       DATABASE_USER: InsuraTradeFlowUser
       DATABASE_PASSWORD: InsuraTradeFlowPassword
-    restart: on-failure
+
+      # Add these Axon-specific variables
+      AXON_AXONSERVER_SERVERS: axon-server:8124
+      AXON_AXONSERVER_CONTEXT: default
+      AXON_AXONSERVER_SSL_ENABLED: "false"
+      AXON_AXONSERVER_ENABLED: "true"
+
+      # Optional but recommended for debugging
+      #LOGGING_LEVEL_ORG_AXONFRAMEWORK: DEBUG
+      #LOGGING_LEVEL_IO_AXONIQ: DEBUG
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     networks:
       - app-network
     environment:
-      - REACT_APP_API_URL=http://app:8080
+      REACT_APP_API_URL: http://app:8080
     depends_on:
-      - app
+      app:
+        condition: service_started
+    restart: unless-stopped
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mysql-data:
+  axonserver-data:

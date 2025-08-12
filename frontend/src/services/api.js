@@ -81,3 +81,7 @@ export const deletePolicy = async (apiUrl, policyId) => {
         'DELETE'
     );
 };
+
+export const fetchDeletedPolicies = async (apiUrl) => {
+    return apiFetch(`${apiUrl}/api/v1/deleted-insurance-policies`);
+};
